@@ -135,9 +135,9 @@ def login(username, password):
             _current_user = username
             return True, "Login successful."
         else:
-            return False, "Incorrect password."
+            return False, "Incorrect username or password."
     else:
-        return False, "Username not found."
+        return False, "Incorrect username or password."
     
 # Database Manipulation Methods
 
