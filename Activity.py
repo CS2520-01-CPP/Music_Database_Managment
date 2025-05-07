@@ -25,7 +25,7 @@ Dependencies:
 """
 
 import subprocess, tkinter as tk
-from tkinter import ttk
+from tkinter import BOTH, END, LEFT, RIGHT, Y, ttk
 import Database
 
 # The modification the GUI is split between left side and right side for simplicity.
@@ -35,22 +35,45 @@ def create_left_area(root, current_user, update_song_info_callback):
     # Create the left frame
     left_frame = tk.Frame(root, bg="lightblue")
     left_frame.grid(row=0, column=0, sticky="nsew")  # Left side will take up 3/4 of the screen
-
+    s = ttk.Style()
+    s.configure('TNotebook', tabposition='sw')
+    customed_style = ttk.Style()
+    customed_style.configure('Custom.TNotebook.Tab', padding=[30, 20], font=('Arial', 10))
     # Create a Notebook widget (tabs)
-    notebook = ttk.Notebook(left_frame)
+    notebook = ttk.Notebook(left_frame, style='Custom.TNotebook')
     notebook.pack(fill="both", expand=True, padx=20, pady=20)
 
     # Create the "All Songs" tab
-    all_songs_frame = tk.Frame(notebook, bg="lightblue")
+    all_songs_frame = tk.Frame(notebook, bg="blue")
     notebook.add(all_songs_frame, text="All Songs")
+    #all_songs_frame.place(x=-50, y=-50)
 
     # Create the "Playlist" tab
     playlist_frame = tk.Frame(notebook, bg="lightblue")
     notebook.add(playlist_frame, text="Playlist")
 
+    # Create the "Account" tab
+    account_frame = tk.Frame(notebook, bg="lightblue")
+    notebook.add(account_frame, text="Account")
+
     # Add content to the "All Songs" tab
     all_songs_label = tk.Label(all_songs_frame, text=f"All Songs", font=("Arial", 20))
     all_songs_label.pack(pady=20)
+    '''
+    scroll_bar = tk.Scrollbar(root) 
+  
+    scroll_bar.pack( side = RIGHT, fill = Y ) 
+   
+    mylist = tk.Listbox(root, yscrollcommand = scroll_bar.set ) 
+   
+    for line in range(1, 26): 
+        mylist.insert(END, "Geeks " + str(line)) 
+  
+    mylist.pack( side = LEFT, fill = BOTH ) 
+  
+    scroll_bar.config( command = mylist.yview )
+    '''
+    
 
     # Get and display all songs from the database
     songs = Database.get_all_songs()
@@ -64,8 +87,12 @@ def create_left_area(root, current_user, update_song_info_callback):
         no_songs_label.pack(pady=20)
 
     # Add content to the "Playlist" tab
+    
+    
     playlist_label = tk.Label(playlist_frame, text="Your Playlists", font=("Arial", 20))
     playlist_label.pack(pady=20)
+
+   
 
     # Fetch and display the user's playlists
     def show_playlist_songs(playlist_name):
@@ -75,13 +102,16 @@ def create_left_area(root, current_user, update_song_info_callback):
             widget.destroy()
 
         # Add the back button to go back to the list of playlists
-        back_button = tk.Button(playlist_frame, text="Back to Playlists", font=("Arial", 14),
-                                command=lambda: show_playlists())
+        back_button = tk.Button(playlist_frame, text="Back to Playlists", font=("Arial", 14),command=lambda: show_playlists())
         back_button.pack(pady=10)
+
+        
 
         # Display playlist name and songs
         playlist_name_label = tk.Label(playlist_frame, text=f"Songs in {playlist_name}", font=("Arial", 20))
         playlist_name_label.pack(pady=10)
+
+        
 
         # Get the songs for the selected playlist
         songs, error = Database.get_playlist(playlist_name)
@@ -108,6 +138,9 @@ def create_left_area(root, current_user, update_song_info_callback):
         playlist_label = tk.Label(playlist_frame, text="Your Playlists", font=("Arial", 20))
         playlist_label.pack(pady=20)
 
+        new_playlist_button = tk.Button(playlist_frame, text="New Playlist", font=("Arial", 14),command=lambda: show_playlists())
+        new_playlist_button.place(x=10, y=10)
+
         playlists, error = Database.get_all_playlists_for_user(current_user)
         if error:
             playlist_error_label = tk.Label(playlist_frame, text=f"Error: {error}", font=("Arial", 16))
@@ -125,6 +158,10 @@ def create_left_area(root, current_user, update_song_info_callback):
 
     # Initially show the list of playlists
     show_playlists()
+
+    # Add content to the "Account" tab
+    account_label = tk.Label(account_frame, text=f"Account", font=("Arial", 20))
+    account_label.pack(pady=20)
 
 def create_right_area(root):
     """Function to create the right area (1/4 of the screen) to show selected song info"""
@@ -176,6 +213,9 @@ def create_right_area(root):
     logout_button = tk.Button(right_frame, text="Logout", font=("Arial", 14), command=logout)
     logout_button.pack(side="bottom", padx=20, pady=20)
 
+
+
+    
     # Return the update function so it can be used elsewhere
     return update_song_info
 
@@ -201,7 +241,7 @@ def launch_activity():
     # Pass the update_song_info function to the left area
     create_left_area(activity_root, current_user, update_song_info)
 
-
+    
 ######################################################## debug info: delete later ########################################################
     
     # print all songs from the database
