@@ -35,10 +35,22 @@ def create_left_area(root, current_user, update_song_info_callback):
     # Create the left frame
     left_frame = tk.Frame(root, bg="lightblue")
     left_frame.grid(row=0, column=0, sticky="nsew")  # Left side will take up 3/4 of the screen
+
+
+    # Create the logout button
+    def logout():
+        # Destroy the current activity window (activity_root)
+        root.destroy()
+
+        # Run Main.py using subprocess
+        subprocess.run(["python", "Main.py"])
+
+    
+
     s = ttk.Style()
     s.configure('TNotebook', tabposition='sw')
     customed_style = ttk.Style()
-    customed_style.configure('Custom.TNotebook.Tab', padding=[30, 20], font=('Arial', 10))
+    customed_style.configure('Custom.TNotebook.Tab', padding=[100, 20], font=('Arial', 10))
     # Create a Notebook widget (tabs)
     notebook = ttk.Notebook(left_frame, style='Custom.TNotebook')
     notebook.pack(fill="both", expand=True, padx=20, pady=20)
@@ -56,23 +68,26 @@ def create_left_area(root, current_user, update_song_info_callback):
     account_frame = tk.Frame(notebook, bg="lightblue")
     notebook.add(account_frame, text="Account")
 
+    # Logout button (positioned at the bottom-right corner)
+    logout_button = tk.Button(left_frame, text="Logout", font=("Arial", 14), command=logout)
+    #logout_button.pack(side="bottom")
+    logout_button.place(x=830, y=655)
+
     # Add content to the "All Songs" tab
     all_songs_label = tk.Label(all_songs_frame, text=f"All Songs", font=("Arial", 20))
     all_songs_label.pack(pady=20)
-    '''
-    scroll_bar = tk.Scrollbar(root) 
-  
-    scroll_bar.pack( side = RIGHT, fill = Y ) 
+
+    #scroll_bar.pack( side = RIGHT, fill = Y ) 
    
-    mylist = tk.Listbox(root, yscrollcommand = scroll_bar.set ) 
+    #mylist = tk.Listbox(root, yscrollcommand = scroll_bar.set ) 
    
-    for line in range(1, 26): 
-        mylist.insert(END, "Geeks " + str(line)) 
+    #for line in range(1, 26): 
+        #mylist.insert(END, "Geeks " + str(line)) 
   
-    mylist.pack( side = LEFT, fill = BOTH ) 
+    #mylist.pack( side = LEFT, fill = BOTH ) 
   
-    scroll_bar.config( command = mylist.yview )
-    '''
+    #scroll_bar.config( command = mylist.yview )
+    
     
 
     # Get and display all songs from the database
@@ -86,12 +101,17 @@ def create_left_area(root, current_user, update_song_info_callback):
         no_songs_label = tk.Label(all_songs_frame, text="No songs found in the database.", font=("Arial", 16))
         no_songs_label.pack(pady=20)
 
+
+        
+    #scroll bar for all songs
+    all_songs_scroll_bar = tk.Scrollbar(all_songs_frame) 
+    all_songs_scroll_bar.pack( side = RIGHT, fill = Y) 
     # Add content to the "Playlist" tab
     
     
     playlist_label = tk.Label(playlist_frame, text="Your Playlists", font=("Arial", 20))
     playlist_label.pack(pady=20)
-
+    
    
 
     # Fetch and display the user's playlists
@@ -158,6 +178,9 @@ def create_left_area(root, current_user, update_song_info_callback):
 
     # Initially show the list of playlists
     show_playlists()
+    #scroll bar for playlists
+    playlist_scroll_bar = tk.Scrollbar(playlist_frame) 
+    playlist_scroll_bar.pack( side = RIGHT, fill = Y) 
 
     # Add content to the "Account" tab
     account_label = tk.Label(account_frame, text=f"Account", font=("Arial", 20))
@@ -201,17 +224,9 @@ def create_right_area(root):
             seconds = int(duration % 60)
             duration_label.config(text=f"Duration: {minutes} minutes {seconds} seconds")
 
-    # Create the logout button
-    def logout():
-        # Destroy the current activity window (activity_root)
-        root.destroy()
 
-        # Run Main.py using subprocess
-        subprocess.run(["python", "Main.py"])
 
-    # Logout button (positioned at the bottom-right corner)
-    logout_button = tk.Button(right_frame, text="Logout", font=("Arial", 14), command=logout)
-    logout_button.pack(side="bottom", padx=20, pady=20)
+    
 
 
 
