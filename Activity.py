@@ -74,24 +74,12 @@ def create_left_area(root, current_user, update_song_info_callback):
     logout_button.place(x=830, y=655)
 
     # Add content to the "All Songs" tab
-    all_songs_label = tk.Label(all_songs_frame, text=f"All Songs", font=("Arial", 20))
-    all_songs_label.pack(pady=20)
-
-    #scroll_bar.pack( side = RIGHT, fill = Y ) 
-   
-    #mylist = tk.Listbox(root, yscrollcommand = scroll_bar.set ) 
-   
-    #for line in range(1, 26): 
-        #mylist.insert(END, "Geeks " + str(line)) 
-  
-    #mylist.pack( side = LEFT, fill = BOTH ) 
-  
-    #scroll_bar.config( command = mylist.yview )
-    
-    
+    #all_songs_label = tk.Label(all_songs_frame, text=f"All Songs", font=("Arial", 20))
+    #all_songs_label.pack(pady=20)
 
     # Get and display all songs from the database
     songs = Database.get_all_songs()
+
     if songs:
         for song in songs:
             song_button = tk.Button(all_songs_frame, text=song, font=("Arial", 16), 
@@ -99,15 +87,57 @@ def create_left_area(root, current_user, update_song_info_callback):
             song_button.pack(anchor="w", padx=20, pady=5)
     else:
         no_songs_label = tk.Label(all_songs_frame, text="No songs found in the database.", font=("Arial", 16))
-        no_songs_label.pack(pady=20)
+        no_songs_label.place(x=10, y=200)
+    
+    song_sections_label = tk.Label(all_songs_frame, text=" Name\t\t   Artist\t\tLength\t", font=("Arial", 25))
+    song_sections_label.place(x=10, y=100)
 
+    search_var = tk.StringVar()
+    search_entry = tk.Entry(all_songs_frame, textvariable=search_var, width = 30, font=("Arial", 20))
+    search_entry.place(x=50, y=10)
+    
+    '''
+    def update_suggestions(*args):
+    search_term = search_var.get()
+    suggestions = ["New York", "Los Angeles", "Chicago", "Houston", "Phoenix"]
 
+    matching_suggestions = [suggestion for suggestion in suggestions if suggestion.lower().startswith(search_term.lower())]
+
+    suggestion_list.delete(0, tk.END)
+    for suggestion in matching_suggestions:
+        suggestion_list.insert(tk.END, suggestion)
+
+search_var.trace("w", update_suggestions)
+    '''
+
+    #suggestion_list = tk.Listbox(all_songs_frame, font=("Arial", 12))
+    #suggestion_list.pack()
+
+    def show():
+        lbl.config(text=cb.get())
+
+    # Dropdown options  
+    a = ["A-Z Song Title", "A-Z Artist", "Song Length"]
+
+    # Combobox
+    cb = ttk.Combobox(all_songs_frame, values=a,width = 10, font=("Arial", 20))
+    cb.set("Select Filter")
+    cb.place(x=700, y=10)
+
+    # Button to display selection  
+    search_button = tk.Button(all_songs_frame, text="Search", command=show, font=("Arial", 10))
+    search_button.place(x=520, y=15)
+    
+    # Label to show selected value  
+    lbl = tk.Label(all_songs_frame, text=" ")
+    lbl.place(x=10, y=50)
         
     #scroll bar for all songs
     all_songs_scroll_bar = tk.Scrollbar(all_songs_frame) 
     all_songs_scroll_bar.pack( side = RIGHT, fill = Y) 
-    # Add content to the "Playlist" tab
     
+    
+    # Add content to the "Playlist" tab
     
     playlist_label = tk.Label(playlist_frame, text="Your Playlists", font=("Arial", 20))
     playlist_label.pack(pady=20)
