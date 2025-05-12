@@ -25,13 +25,15 @@ Dependencies:
 """
 
 import tkinter as tk
+from tkinter import PhotoImage
 import Database
+import os
 
 # Creates the Sign in Page
 root = tk.Tk()
 root.title("Python Final Sign-In Page")
 root.geometry("400x400")
-
+#root.configure(background='beige')
 # Basic UI for now
 tk.Label(root, text="Username:").pack()
 entry_username = tk.Entry(root)
@@ -45,5 +47,11 @@ entry_password.pack()
 tk.Button(root, text="Signup", command=lambda: Database.do_signup(entry_username, entry_password)).pack(pady=5)
 tk.Button(root, text="Login", command=lambda: Database.do_login(entry_username, entry_password, root)).pack(pady=5)
 
+absolute_path = os.path.dirname(os.path.abspath(__file__))
+filename = os.path.join(absolute_path, "logo.png")
+og_image = PhotoImage(file = filename)
+image = og_image.subsample(6,6)
+image_label = tk.Label(root, image = image)
+image_label.pack()
 # Runs the sign in page
 root.mainloop()
