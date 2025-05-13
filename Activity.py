@@ -92,21 +92,19 @@ def create_left_area(root, current_user, update_song_info_callback):
     all_songs_scroll_frame = tk.Frame(all_songs_canvas)
     all_songs_canvas.create_window((0,0), window = all_songs_scroll_frame, anchor = "nw")
     current_y_axis = 50
-    abut = tk.Button(all_songs_scroll_frame, text="hello")
-    abut.place(x = 10, y = current_y_axis)
-    for i in range(1):
-            abut = tk.Button(all_songs_scroll_frame, text="hello").pack()
-            current_y_axis += 10
+    #abut = tk.Button(all_songs_scroll_frame, text="hello")
+    #abut.place(x = 10, y = current_y_axis)
+
     # Get and display all songs from the database
     songs = Database.get_all_songs()
     
     if songs:
-        current_y_axis = 50
+        #current_y_axis = 50
         for song in songs:
             song_button = tk.Button(all_songs_scroll_frame, text=song, font=("Arial", 16), 
-                                    command=lambda s=song: update_song_info_callback(s))
-            song_button.place(x=10, y=current_y_axis)
-            current_y_axis += 100
+                                    command=lambda s=song: update_song_info_callback(s)).pack()
+            #song_button.place(x=10, y=current_y_axis)
+            #current_y_axis += 100
     else:
         no_songs_label = tk.Label(all_songs_canvas, text="No songs found in the database.", font=("Arial", 16))
         no_songs_label.place(x=10, y=50)
