@@ -25,7 +25,7 @@ Dependencies:
 """
 
 import subprocess, tkinter as tk
-from tkinter import BOTH, END, LEFT, RIGHT, Y, ttk
+from tkinter import BOTH, BOTTOM, END, LEFT, RIGHT, VERTICAL, Y, ttk
 import Database
 
 # The modification the GUI is split between left side and right side for simplicity.
@@ -74,23 +74,44 @@ def create_left_area(root, current_user, update_song_info_callback):
     logout_button.place(x=830, y=655)
 
     # Add content to the "All Songs" tab
-    #all_songs_label = tk.Label(all_songs_frame, text=f"All Songs", font=("Arial", 20))
-    #all_songs_label.pack(pady=20)
+    #all_songs_aesthetic = tk.Frame(all_songs_frame,width=910, height=700)
+    #all_songs_aesthetic.place(y=80)
+    all_songs_aesthetic_header = tk.Frame(all_songs_frame,width=900, height=80, highlightbackground="black", highlightthickness=10)
+    song_sections_label = tk.Label(all_songs_frame, text=" Name\t\t\t Artist     \t\tLength\t", font=("Arial", 25))
+    song_sections_label.place(x=10, y=100)
+    all_songs_aesthetic_header.place(y=80)
+    all_songs_canvas = tk.Canvas(all_songs_frame,width=900, height=800)
+    all_songs_canvas.place(x=0,y=160)
+    #all_songs_canvas.pack(side = LEFT, fill = BOTH,expand = 1)
+    #adds scrollbar
+    all_songs_scroll_bar = tk.Scrollbar(all_songs_frame, orient = VERTICAL, command = all_songs_canvas.yview) 
+    all_songs_scroll_bar.pack( side = RIGHT, fill = Y) 
+    all_songs_canvas.configure(yscrollcommand=all_songs_scroll_bar.set)
+    all_songs_canvas.bind('<Configure>', lambda e: all_songs_canvas.configure(scrollregion = all_songs_canvas.bbox("all")))
 
+    all_songs_scroll_frame = tk.Frame(all_songs_canvas)
+    all_songs_canvas.create_window((0,0), window = all_songs_scroll_frame, anchor = "nw")
+    current_y_axis = 50
+    abut = tk.Button(all_songs_scroll_frame, text="hello")
+    abut.place(x = 10, y = current_y_axis)
+    for i in range(1):
+            abut = tk.Button(all_songs_scroll_frame, text="hello").pack()
+            current_y_axis += 10
     # Get and display all songs from the database
     songs = Database.get_all_songs()
-
-    if songs:
-        for song in songs:
-            song_button = tk.Button(all_songs_frame, text=song, font=("Arial", 16), 
-                                    command=lambda s=song: update_song_info_callback(s))
-            song_button.pack(anchor="w", padx=20, pady=5)
-    else:
-        no_songs_label = tk.Label(all_songs_frame, text="No songs found in the database.", font=("Arial", 16))
-        no_songs_label.place(x=10, y=200)
     
-    song_sections_label = tk.Label(all_songs_frame, text=" Name\t\t   Artist\t\tLength\t", font=("Arial", 25))
-    song_sections_label.place(x=10, y=100)
+    if songs:
+        current_y_axis = 50
+        for song in songs:
+            song_button = tk.Button(all_songs_scroll_frame, text=song, font=("Arial", 16), 
+                                    command=lambda s=song: update_song_info_callback(s))
+            song_button.place(x=10, y=current_y_axis)
+            current_y_axis += 100
+    else:
+        no_songs_label = tk.Label(all_songs_canvas, text="No songs found in the database.", font=("Arial", 16))
+        no_songs_label.place(x=10, y=50)
+    
+    
 
     search_var = tk.StringVar()
     search_entry = tk.Entry(all_songs_frame, textvariable=search_var, width = 30, font=("Arial", 20))
@@ -113,8 +134,8 @@ search_var.trace("w", update_suggestions)
     #suggestion_list = tk.Listbox(all_songs_frame, font=("Arial", 12))
     #suggestion_list.pack()
 
-    def show():
-        lbl.config(text=cb.get())
+    #def show():
+      
 
     # Dropdown options  
     a = ["A-Z Song Title", "A-Z Artist", "Song Length"]
@@ -125,17 +146,14 @@ search_var.trace("w", update_suggestions)
     cb.place(x=700, y=10)
 
     # Button to display selection  
-    search_button = tk.Button(all_songs_frame, text="Search", command=show, font=("Arial", 10))
+    search_button = tk.Button(all_songs_frame, text="Search", font=("Arial", 10))
     search_button.place(x=520, y=15)
     
-    # Label to show selected value  
-    lbl = tk.Label(all_songs_frame, text=" ")
-    lbl.place(x=10, y=50)
+
         
     #scroll bar for all songs
-    all_songs_scroll_bar = tk.Scrollbar(all_songs_frame) 
-    all_songs_scroll_bar.pack( side = RIGHT, fill = Y) 
-    
+    #all_songs_scroll_bar = tk.Scrollbar(all_songs_frame) 
+    #all_songs_scroll_bar.pack( side = RIGHT, fill = Y) 
     
     # Add content to the "Playlist" tab
     
