@@ -24,8 +24,9 @@ Dependencies:
 
 """
 
+import os
 import subprocess, tkinter as tk
-from tkinter import BOTH, BOTTOM, END, LEFT, RIGHT, VERTICAL, Y, ttk
+from tkinter import BOTH, BOTTOM, END, LEFT, RIGHT, TOP, VERTICAL, Y, PhotoImage, ttk
 import Database
 
 # The modification the GUI is split between left side and right side for simplicity.
@@ -235,7 +236,7 @@ search_var.trace("w", update_suggestions)
 def create_right_area(root):
     """Function to create the right area (1/4 of the screen) to show selected song info"""
     # Create the right frame
-    right_frame = tk.Frame(root, bg="lightgreen")
+    right_frame = tk.Frame(root, bg="white")
     right_frame.grid(row=0, column=1, sticky="nsew")  # Right side will take up 1/4 of the screen
 
     # Song information label (will update dynamically)
@@ -269,7 +270,27 @@ def create_right_area(root):
             minutes = int(duration // 60)
             seconds = int(duration % 60)
             duration_label.config(text=f"Duration: {minutes} minutes {seconds} seconds")
-
+    '''
+    absolute_path = os.path.dirname(os.path.abspath(__file__))
+    filename = os.path.join(absolute_path, "play.png")
+    og_image = PhotoImage(file = filename)
+    image = og_image.subsample(8,8)
+    image = og_image.subsample(6,6)
+    image_label = tk.Label(right_frame, image = image).pack()
+    image_label.place(x=10,y=10)
+    '''
+    pause_play_button = tk.Button(right_frame,text = "Pause/Play", font=("Arial", 10))
+    pause_play_button.place(x=125,y=550)
+    prev_button = tk.Button(right_frame,text = "Prev", font=("Arial", 10))
+    prev_button.place(x=75,y=550)
+    next_button = tk.Button(right_frame,text = "Next", font=("Arial", 10))
+    next_button.place(x=250,y=550)
+    replay_button = tk.Button(right_frame,text = "replay", font=("Arial", 10))
+    replay_button.place(x=25,y=550)
+    add_button = tk.Button(right_frame,text = "add to playlist", font=("Arial", 10))
+    add_button.place(x=125,y=650)
+    #pause_play_button.place(x=10,y=10) # Displaying the button
+    
 
 
     
