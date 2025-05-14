@@ -46,6 +46,25 @@ def connect():
     conn = sqlite3.connect('song_database.db')
     return conn
 
+def remove_playlist(username, playlist_name):
+    """Function to remove a playlist belonging to a user."""
+    conn = connect()
+    cursor = conn.cursor()
+
+    # Check if the playlist exists for this user
+    cursor.execute('SELECT * FROM Playlist_Table WHERE Name = ? AND User_Username = ?', (playlist_name, username))
+    row = cursor.fetchone()
+
+    if row:
+        # Delete the playlist
+        cursor.execute('DELETE FROM Playlist_Table WHERE Name = ? AND User_Username = ?', (playlist_name, username))
+        conn.commit()
+        conn.close()
+        return True, f"Playlist '{playlist_name}' has been removed."
+    else:
+        conn.close()
+        return False, f"Playlist '{playlist_name}' not found for user '{username}'."
+
 # Database Creation
 
 def create_tables():

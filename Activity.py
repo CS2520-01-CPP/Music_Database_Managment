@@ -21,16 +21,17 @@ Usage:
 Dependencies:
 - Tkinter (for GUI)
 - Database module (for database operations like fetching songs, creating playlists, etc.)
-
+- Pygame
 """
 
 import os
 import subprocess, tkinter as tk
+import pygame
 from tkinter import BOTH, BOTTOM, END, LEFT, RIGHT, TOP, VERTICAL, Y, PhotoImage, ttk
+from tkinter import messagebox
 import Database
 
 # The modification the GUI is split between left side and right side for simplicity.
-
 def create_left_area(root, current_user, update_song_info_callback):
     """Function to create the left area (3/4 of the screen) with tabs for 'All Songs' and 'Playlist'"""
     # Create the left frame
@@ -46,8 +47,6 @@ def create_left_area(root, current_user, update_song_info_callback):
         # Run Main.py using subprocess
         subprocess.run(["python", "Main.py"])
 
-    
-
     s = ttk.Style()
     s.configure('TNotebook', tabposition='sw')
     customed_style = ttk.Style()
@@ -59,7 +58,6 @@ def create_left_area(root, current_user, update_song_info_callback):
     # Create the "All Songs" tab
     all_songs_frame = tk.Frame(notebook, bg="blue")
     notebook.add(all_songs_frame, text="All Songs")
-    #all_songs_frame.place(x=-50, y=-50)
 
     # Create the "Playlist" tab
     playlist_frame = tk.Frame(notebook, bg="lightblue")
@@ -69,102 +67,98 @@ def create_left_area(root, current_user, update_song_info_callback):
     account_frame = tk.Frame(notebook, bg="lightblue")
     notebook.add(account_frame, text="Account")
 
-    # Logout button (positioned at the bottom-right corner)
-    logout_button = tk.Button(left_frame, text="Logout", font=("Arial", 14), command=logout)
-    #logout_button.pack(side="bottom")
-    logout_button.place(x=830, y=655)
 
     # Add content to the "All Songs" tab
-    #all_songs_aesthetic = tk.Frame(all_songs_frame,width=910, height=700)
-    #all_songs_aesthetic.place(y=80)
     all_songs_aesthetic_header = tk.Frame(all_songs_frame,width=900, height=80, highlightbackground="black", highlightthickness=10)
-    song_sections_label = tk.Label(all_songs_frame, text=" Name\t\t\t Artist     \t\tLength\t", font=("Arial", 25))
+    song_sections_label = tk.Label(all_songs_frame, text=" All Songs in Database", font=("Arial", 25))
     song_sections_label.place(x=10, y=100)
     all_songs_aesthetic_header.place(y=80)
     all_songs_canvas = tk.Canvas(all_songs_frame,width=900, height=800)
     all_songs_canvas.place(x=0,y=160)
-    #all_songs_canvas.pack(side = LEFT, fill = BOTH,expand = 1)
-    #adds scrollbar
-    all_songs_scroll_bar = tk.Scrollbar(all_songs_frame, orient = VERTICAL, command = all_songs_canvas.yview) 
-    all_songs_scroll_bar.pack( side = RIGHT, fill = Y) 
+    # Adds scrollbar
+    all_songs_scroll_bar = tk.Scrollbar(all_songs_frame, orient=VERTICAL, command=all_songs_canvas.yview) 
+    all_songs_scroll_bar.pack(side=RIGHT, fill=Y) 
     all_songs_canvas.configure(yscrollcommand=all_songs_scroll_bar.set)
-    all_songs_canvas.bind('<Configure>', lambda e: all_songs_canvas.configure(scrollregion = all_songs_canvas.bbox("all")))
+    all_songs_canvas.bind('<Configure>', lambda e: all_songs_canvas.configure(scrollregion=all_songs_canvas.bbox("all")))
 
     all_songs_scroll_frame = tk.Frame(all_songs_canvas)
-    all_songs_canvas.create_window((0,0), window = all_songs_scroll_frame, anchor = "nw")
+    all_songs_canvas.create_window((0, 0), window=all_songs_scroll_frame, anchor="nw")
     current_y_axis = 50
-    #abut = tk.Button(all_songs_scroll_frame, text="hello")
-    #abut.place(x = 10, y = current_y_axis)
 
     # Get and display all songs from the database
     songs = Database.get_all_songs()
     
     if songs:
-        #current_y_axis = 50
         for song in songs:
             song_button = tk.Button(all_songs_scroll_frame, text=song, font=("Arial", 16), 
                                     command=lambda s=song: update_song_info_callback(s)).pack()
-            #song_button.place(x=10, y=current_y_axis)
-            #current_y_axis += 100
     else:
         no_songs_label = tk.Label(all_songs_canvas, text="No songs found in the database.", font=("Arial", 16))
         no_songs_label.place(x=10, y=50)
     
-    
+    # Search bar with label to the left
+    search_label = tk.Label(all_songs_frame, text="Search:", font=("Arial", 20))
+    search_label.place(x=10, y=10)
 
     search_var = tk.StringVar()
-    search_entry = tk.Entry(all_songs_frame, textvariable=search_var, width = 30, font=("Arial", 20))
-    search_entry.place(x=50, y=10)
-    
-    '''
-    def update_suggestions(*args):
-    search_term = search_var.get()
-    suggestions = ["New York", "Los Angeles", "Chicago", "Houston", "Phoenix"]
+    search_entry = tk.Entry(all_songs_frame, textvariable=search_var, width=30, font=("Arial", 20))
+    search_entry.place(x=130, y=10)
 
-    matching_suggestions = [suggestion for suggestion in suggestions if suggestion.lower().startswith(search_term.lower())]
+    def update_song_list():
+        search_term = search_var.get().lower()
 
-    suggestion_list.delete(0, tk.END)
-    for suggestion in matching_suggestions:
-        suggestion_list.insert(tk.END, suggestion)
+        # Debugging: Check if the search term is being retrieved correctly
+        print(f"Search term: {search_term}")
 
-search_var.trace("w", update_suggestions)
-    '''
+        # Clear existing song buttons
+        for widget in all_songs_scroll_frame.winfo_children():
+            widget.destroy()
 
-    #suggestion_list = tk.Listbox(all_songs_frame, font=("Arial", 12))
-    #suggestion_list.pack()
+        # Get all songs and filter by search term
+        all_songs = Database.get_all_songs()
 
-    #def show():
-      
+        # Debugging: Check if songs are being retrieved from the database
+        print(f"All songs retrieved: {all_songs}")
 
-    # Dropdown options  
-    a = ["A-Z Song Title", "A-Z Artist", "Song Length"]
+        filtered_songs = [song for song in all_songs if search_term in song.lower()]
 
-    # Combobox
-    cb = ttk.Combobox(all_songs_frame, values=a,width = 10, font=("Arial", 20))
-    cb.set("Select Filter")
-    cb.place(x=700, y=10)
+        # Debugging: Check the filtered songs
+        print(f"Filtered songs: {filtered_songs}")
 
-    # Button to display selection  
-    search_button = tk.Button(all_songs_frame, text="Search", font=("Arial", 10))
-    search_button.place(x=520, y=15)
-    
+        # Helper to parse song into components (title, artist)
+        def parse_song(song_str):
+            print(f"Parsing song: {song_str}")  # Debugging print
+            parts = song_str.split(", ")
+            if len(parts) == 2:
+                name = parts[0].strip()  # The song name
+                artist_with_extension = parts[1].strip()  # The artist and file extension
+                artist = artist_with_extension.replace(".mp3", "")  # Remove the .mp3 extension
+                print(f"Parsed name: {name}, artist: {artist}")  # Debugging print
+                return name, artist
+            return song_str, ""  # If it's not in the expected format
 
-        
-    #scroll bar for all songs
-    #all_songs_scroll_bar = tk.Scrollbar(all_songs_frame) 
-    #all_songs_scroll_bar.pack( side = RIGHT, fill = Y) 
-    
+        # Display the filtered songs
+        if filtered_songs:
+            for song in filtered_songs:
+                tk.Button(
+                    all_songs_scroll_frame,
+                    text=song,
+                    font=("Arial", 16),
+                    command=lambda s=song: update_song_info_callback(s)
+                ).pack()
+        else:
+            tk.Label(all_songs_scroll_frame, text="No songs found.", font=("Arial", 16)).pack()
+
+    # Adding the trace for search_var to call update_song_list when the search text is changed
+    search_var.trace_add("write", lambda *args: update_song_list())
+
     # Add content to the "Playlist" tab
-    
     playlist_label = tk.Label(playlist_frame, text="Your Playlists", font=("Arial", 20))
     playlist_label.pack(pady=20)
-    
-   
 
     # Fetch and display the user's playlists
     def show_playlist_songs(playlist_name):
         """Function to show songs of the selected playlist."""
-        # Remove all widgets from the current playlist frame
         for widget in playlist_frame.winfo_children():
             widget.destroy()
 
@@ -172,15 +166,9 @@ search_var.trace("w", update_suggestions)
         back_button = tk.Button(playlist_frame, text="Back to Playlists", font=("Arial", 14),command=lambda: show_playlists())
         back_button.pack(pady=10)
 
-        
-
-        # Display playlist name and songs
         playlist_name_label = tk.Label(playlist_frame, text=f"Songs in {playlist_name}", font=("Arial", 20))
         playlist_name_label.pack(pady=10)
 
-        
-
-        # Get the songs for the selected playlist
         songs, error = Database.get_playlist(playlist_name)
         if error:
             playlist_error_label = tk.Label(playlist_frame, text=f"Error: {error}", font=("Arial", 16))
@@ -197,15 +185,94 @@ search_var.trace("w", update_suggestions)
 
     def show_playlists():
         """Function to show the list of playlists."""
-        # Clear all widgets in the playlist frame
         for widget in playlist_frame.winfo_children():
             widget.destroy()
 
-        # Display playlists list
         playlist_label = tk.Label(playlist_frame, text="Your Playlists", font=("Arial", 20))
         playlist_label.pack(pady=20)
 
-        new_playlist_button = tk.Button(playlist_frame, text="New Playlist", font=("Arial", 14),command=lambda: show_playlists())
+        def new_playlist_ui():
+            for widget in playlist_frame.winfo_children():
+                widget.destroy()
+
+            tk.Label(playlist_frame, text="Create New Playlist", font=("Arial", 20)).pack(pady=10)
+
+            # Playlist name entry
+            tk.Label(playlist_frame, text="Playlist Name:", font=("Arial", 14)).pack(pady=(0, 0))
+            playlist_name_var = tk.StringVar()
+            tk.Entry(playlist_frame, textvariable=playlist_name_var, font=("Arial", 14), width=30).pack()
+
+            # Search bar
+            search_frame = tk.Frame(playlist_frame)
+            search_frame.pack(pady=10)
+
+            search_label = tk.Label(search_frame, text="Search:", font=("Arial", 14))
+            search_label.pack(side=tk.LEFT)
+
+            search_var = tk.StringVar()
+            search_entry = tk.Entry(search_frame, textvariable=search_var, font=("Arial", 14), width=30)
+            search_entry.pack(side=tk.LEFT)
+
+
+            # Frame + canvas for checkbox song list
+            canvas = tk.Canvas(playlist_frame, width=500, height=400)
+            scroll_frame = tk.Frame(canvas)
+            scrollbar = tk.Scrollbar(playlist_frame, orient="vertical", command=canvas.yview)
+            canvas.configure(yscrollcommand=scrollbar.set)
+
+            canvas.create_window((0, 0), window=scroll_frame, anchor='nw')
+            canvas.pack(side="left", fill="both", expand=True, padx=10)
+            scrollbar.pack(side="right", fill="y")
+
+            check_vars = {}  # Dictionary to store checkbox vars
+
+            def populate_checkboxes(filter_text=""):
+                # Clear previous
+                for widget in scroll_frame.winfo_children():
+                    widget.destroy()
+                check_vars.clear()
+
+                all_songs = Database.get_all_songs()
+                filtered_songs = [song for song in all_songs if filter_text.lower() in song.lower()]
+
+                for song in filtered_songs:
+                    var = tk.BooleanVar()
+                    check = tk.Checkbutton(scroll_frame, text=song, variable=var, font=("Arial", 12), anchor="w", justify="left", wraplength=450)
+                    check.pack(anchor="w")
+                    check_vars[song] = var
+
+                scroll_frame.update_idletasks()
+                canvas.config(scrollregion=canvas.bbox("all"))
+
+            # Initially populate all songs
+            populate_checkboxes()
+
+            # Update on search change
+            search_var.trace_add("write", lambda *args: populate_checkboxes(search_var.get()))
+
+            # Create Playlist button
+            def create_playlist():
+                name = playlist_name_var.get().strip()
+                if not name:
+                    messagebox.showerror("Error", "Playlist name cannot be empty.")
+                    return
+
+                selected_songs = [song for song, var in check_vars.items() if var.get()]
+                if not selected_songs:
+                    messagebox.showerror("Error", "Select at least one song to create a playlist.")
+                    return
+
+                Database.add_songs_to_playlist(current_user, name, selected_songs)
+                messagebox.showinfo("Success", f"Playlist '{name}' created!")
+                show_playlists()
+
+            tk.Button(playlist_frame, text="Create Playlist", font=("Arial", 14), command=create_playlist).pack(pady=10)
+
+            # Cancel/back button
+            tk.Button(playlist_frame, text="Cancel", font=("Arial", 12), command=show_playlists).pack(pady=5)
+
+        # Now use the above in the button
+        new_playlist_button = tk.Button(playlist_frame, text="New Playlist", font=("Arial", 14), command=new_playlist_ui)
         new_playlist_button.place(x=10, y=10)
 
         playlists, error = Database.get_all_playlists_for_user(current_user)
@@ -215,26 +282,55 @@ search_var.trace("w", update_suggestions)
         else:
             if playlists:
                 for playlist in playlists:
-                    # Each playlist is clickable, display songs when clicked
-                    playlist_button = tk.Button(playlist_frame, text=playlist, font=("Arial", 16),
-                                                command=lambda p=playlist: show_playlist_songs(p))
-                    playlist_button.pack(anchor="w", padx=20, pady=5)
+                    playlist_row = tk.Frame(playlist_frame)
+                    playlist_row.pack(pady=5, fill="x")
+
+                    playlist_button = tk.Button(playlist_row, text=playlist, font=("Arial", 14),
+                                                command=lambda name=playlist: show_playlist_songs(name))
+                    playlist_button.pack(side="left", padx=5)
+
+                    remove_button = tk.Button(playlist_row, text="Remove", font=("Arial", 12), fg="red",
+                                            command=lambda name=playlist: confirm_remove_playlist(name))
+                    remove_button.pack(side="right", padx=5)
             else:
                 no_playlist_label = tk.Label(playlist_frame, text="No playlists found.", font=("Arial", 16))
                 no_playlist_label.pack(pady=20)
 
-    # Initially show the list of playlists
     show_playlists()
     #scroll bar for playlists
     playlist_scroll_bar = tk.Scrollbar(playlist_frame) 
-    playlist_scroll_bar.pack( side = RIGHT, fill = Y) 
+    playlist_scroll_bar.pack(side=RIGHT, fill=Y) 
 
     # Add content to the "Account" tab
     account_label = tk.Label(account_frame, text=f"Account", font=("Arial", 20))
     account_label.pack(pady=20)
 
+    # Logout button (positioned at the bottom-right corner)
+    logout_button = tk.Button(left_frame, text="Logout", font=("Arial", 14), command=logout)
+
+    def confirm_remove_playlist(name):
+        confirm = messagebox.askyesno("Remove Playlist", f"Are you sure you want to delete '{name}'?")
+        if confirm:
+            Database.remove_playlist(current_user, name)
+            messagebox.showinfo("Deleted", f"'{name}' has been deleted.")
+            show_playlists()
+
+    def on_tab_changed(event):
+        selected_tab = notebook.tab(notebook.select(), "text")
+        if selected_tab == "Account":
+            logout_button.place(x=830, y=655)
+        else:
+            logout_button.place_forget()
+
+    notebook.bind("<<NotebookTabChanged>>", on_tab_changed)
+
+
+
 def create_right_area(root):
     """Function to create the right area (1/4 of the screen) to show selected song info"""
+    # Initialize pygame mixer for audio playback
+    pygame.mixer.init()
+
     # Create the right frame
     right_frame = tk.Frame(root, bg="white")
     right_frame.grid(row=0, column=1, sticky="nsew")  # Right side will take up 1/4 of the screen
@@ -253,8 +349,30 @@ def create_right_area(root):
     duration_label = tk.Label(right_frame, text="Duration: ", font=("Arial", 14), bg="lightgreen")
     duration_label.pack(anchor="w", padx=20, pady=5)
 
+    current_song_name = None
+    is_playing = False  # Track if the song is currently playing
+
+    # Function to play or stop the song
+    def toggle_play_stop():
+        nonlocal is_playing, current_song_name
+        
+        if is_playing:
+            print(f"Stopping: {current_song_name}")
+            pygame.mixer.music.stop()  # Stop the music
+            play_button.config(text="Play")  # Change button text to "Play"
+            is_playing = False
+        else:
+            print(f"Playing: {current_song_name}")
+            current_song_dir = os.path.join(os.getcwd(), 'Songs', current_song_name)
+            pygame.mixer.music.load(current_song_dir)  # Load the song
+            pygame.mixer.music.play()  # Play the song
+            play_button.config(text="Stop")  # Change button text to "Stop"
+            is_playing = True
+
     # Function to update the song info labels when a song is selected
     def update_song_info(song_name):
+        nonlocal current_song_name  # Use the outer variable
+        
         # Get the details for the song
         title, author, duration = Database.get_song_details(song_name)
         
@@ -270,34 +388,16 @@ def create_right_area(root):
             minutes = int(duration // 60)
             seconds = int(duration % 60)
             duration_label.config(text=f"Duration: {minutes} minutes {seconds} seconds")
-    '''
-    absolute_path = os.path.dirname(os.path.abspath(__file__))
-    filename = os.path.join(absolute_path, "play.png")
-    og_image = PhotoImage(file = filename)
-    image = og_image.subsample(8,8)
-    image = og_image.subsample(6,6)
-    image_label = tk.Label(right_frame, image = image).pack()
-    image_label.place(x=10,y=10)
-    '''
-    pause_play_button = tk.Button(right_frame,text = "Pause/Play", font=("Arial", 10))
-    pause_play_button.place(x=125,y=550)
-    prev_button = tk.Button(right_frame,text = "Prev", font=("Arial", 10))
-    prev_button.place(x=75,y=550)
-    next_button = tk.Button(right_frame,text = "Next", font=("Arial", 10))
-    next_button.place(x=250,y=550)
-    replay_button = tk.Button(right_frame,text = "replay", font=("Arial", 10))
-    replay_button.place(x=25,y=550)
-    add_button = tk.Button(right_frame,text = "add to playlist", font=("Arial", 10))
-    add_button.place(x=125,y=650)
-    #pause_play_button.place(x=10,y=10) # Displaying the button
-    
+        
+        # Update the current song name
+        current_song_name = song_name
+        current_song_dir = os.path.join(os.getcwd(), 'Songs', current_song_name)
+        print(f"Song directory: {current_song_dir}")
 
+    # Add the Play/Stop button
+    play_button = tk.Button(right_frame, text="Play", font=("Arial", 14), bg="lightgreen", command=toggle_play_stop)
+    play_button.pack(pady=10)
 
-    
-
-
-
-    
     # Return the update function so it can be used elsewhere
     return update_song_info
 
@@ -322,36 +422,6 @@ def launch_activity():
 
     # Pass the update_song_info function to the left area
     create_left_area(activity_root, current_user, update_song_info)
-
-    
-######################################################## debug info: delete later ########################################################
-    
-    # print all songs from the database
-    songs = Database.get_all_songs()
-
-    print("Songs in Database")
-    if songs:
-        for song in songs:
-            print(song)
-    else:
-        print("No songs found in the database.")
-    
-    print("\n\n")
-
-    # This is how to add a playlists for the current user
-    Database.add_songs_to_playlist(current_user, 'temp_playlist', ['BIRDS OF A FEATHER, Billie Eilish.mp3', 'LUNCH, Billie Eilish.mp3'])
-
-    # This is how to get a playlists contents
-    songs, error = Database.get_playlist("temp_playlist")
-    if error:
-        print(f"Error: {error}")
-    else:
-        print("User's Selected Playlist: ")
-        for song in songs:
-            print(song)
-
-
-    ######################################################## debug end ########################################################
 
     activity_root.mainloop()
 
