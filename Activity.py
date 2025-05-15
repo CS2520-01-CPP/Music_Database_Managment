@@ -31,6 +31,7 @@ from tkinter import BOTH, BOTTOM, END, LEFT, RIGHT, TOP, VERTICAL, Y, PhotoImage
 from tkinter import messagebox
 import Database
 
+
 # The modification the GUI is split between left side and right side for simplicity.
 def create_left_area(root, current_user, update_song_info_callback):
     """Function to create the left area (3/4 of the screen) with tabs for 'All Songs' and 'Playlist'"""
@@ -167,7 +168,73 @@ def create_left_area(root, current_user, update_song_info_callback):
         # Add the back button to go back to the list of playlists
         back_button = tk.Button(playlist_frame, text="Back to Playlists", font=("Arial", 14),command=lambda: show_playlists())
         back_button.pack(pady=10)
-        tk.Button(playlist_frame, text="Edit Playlist", font=("Arial", 14)).pack(pady=10)
+        tk.Button(playlist_frame, text="Edit Playlist", font=("Arial", 14),
+          command=lambda: edit_playlist_ui(playlist_name)).pack(pady=10)
+        
+        def edit_playlist_ui(playlist_name):
+            for widget in playlist_frame.winfo_children():
+                widget.destroy()
+
+            tk.Label(playlist_frame, text=f"Edit Playlist: {playlist_name}", font=("Arial", 20)).pack(pady=10)
+
+            # Search bar
+            search_frame = tk.Frame(playlist_frame)
+            search_frame.pack(pady=10)
+
+            search_label = tk.Label(search_frame, text="Search:", font=("Arial", 14))
+            search_label.pack(side=tk.LEFT)
+
+            search_var = tk.StringVar()
+            search_entry = tk.Entry(search_frame, textvariable=search_var, font=("Arial", 14), width=30)
+            search_entry.pack(side=tk.LEFT)
+
+            # Scrollable song checkbox list
+            canvas = tk.Canvas(playlist_frame, width=500, height=400)
+            scroll_frame = tk.Frame(canvas)
+            scrollbar = tk.Scrollbar(playlist_frame, orient="vertical", command=canvas.yview)
+            canvas.configure(yscrollcommand=scrollbar.set)
+
+            canvas.create_window((0, 0), window=scroll_frame, anchor='nw')
+            canvas.pack(side="left", fill="both", expand=True, padx=10)
+            scrollbar.pack(side="right", fill="y")
+
+            check_vars = {}
+
+            def populate_checkboxes(filter_text=""):
+                for widget in scroll_frame.winfo_children():
+                    widget.destroy()
+                check_vars.clear()
+
+                all_songs = Database.get_all_songs()
+                current_songs, _ = Database.get_playlist(playlist_name)
+                filtered_songs = [song for song in all_songs if filter_text.lower() in song.lower()]
+
+                for song in filtered_songs:
+                    var = tk.BooleanVar(value=(song in current_songs))
+                    check = tk.Checkbutton(scroll_frame, text=song, variable=var, font=("Arial", 12),
+                                        anchor="w", justify="left", wraplength=450)
+                    check.pack(anchor="w")
+                    check_vars[song] = var
+
+                scroll_frame.update_idletasks()
+                canvas.config(scrollregion=canvas.bbox("all"))
+
+            populate_checkboxes()
+            search_var.trace_add("write", lambda *args: populate_checkboxes(search_var.get()))
+
+            def save_edited_playlist():
+                selected_songs = [song for song, var in check_vars.items() if var.get()]
+                if not selected_songs:
+                    messagebox.showerror("Error", "Select at least one song to keep in the playlist.")
+                    return
+
+                # Overwrite the playlist content
+                Database.replace_playlist_songs(current_user, playlist_name, selected_songs)
+                messagebox.showinfo("Success", f"Playlist '{playlist_name}' updated!")
+                show_playlist_songs(playlist_name)
+
+            tk.Button(playlist_frame, text="Save Changes", font=("Arial", 14), command=save_edited_playlist).pack(pady=10)
+            tk.Button(playlist_frame, text="Cancel", font=("Arial", 12), command=lambda: show_playlist_songs(playlist_name)).pack(pady=5)
 
         playlist_name_label = tk.Label(playlist_frame, text=f"Songs in {playlist_name}", font=("Arial", 20))
         playlist_name_label.pack(pady=10)

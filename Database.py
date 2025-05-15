@@ -34,6 +34,8 @@ import Activity
 
 # Global variable and functions to store the current user
 _current_user = None
+conn = None
+
 
 def set_current_user(username):
     global _current_user
@@ -250,6 +252,28 @@ def do_login(entry_username, entry_password, root):
         Activity.launch_activity()  # Launch the Activity window
     else:
         messagebox.showerror("Login Error", message)
+
+def replace_playlist_songs(username, playlist_name, new_songs):
+    conn = connect()
+    cursor = conn.cursor()
+
+    # Check if the playlist exists for the user
+    cursor.execute('SELECT List FROM Playlist_Table WHERE Name = ? AND User_Username = ?', (playlist_name, username))
+    row = cursor.fetchone()
+
+    if not row:
+        # Playlist does not exist — create it with the new songs list
+        cursor.execute('INSERT INTO Playlist_Table (Name, User_Username, List) VALUES (?, ?, ?)', 
+                       (playlist_name, username, json.dumps(new_songs)))
+        print(f"Playlist '{playlist_name}' created for user {username} with songs: {new_songs}")
+    else:
+        # Playlist exists — replace the List column with the new songs
+        cursor.execute('UPDATE Playlist_Table SET List = ? WHERE Name = ? AND User_Username = ?', 
+                       (json.dumps(new_songs), playlist_name, username))
+        print(f"Playlist '{playlist_name}' updated for user {username} with new songs: {new_songs}")
+
+    conn.commit()
+    conn.close()
 
 def get_playlist(playlist_name):
     """Function to create a list of songs from the database Playlist_Table"""
