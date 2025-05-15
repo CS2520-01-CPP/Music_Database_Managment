@@ -73,9 +73,10 @@ def create_left_area(root, current_user, update_song_info_callback):
     song_sections_label = tk.Label(all_songs_frame, text=" All Songs in Database", font=("Arial", 25))
     song_sections_label.place(x=10, y=100)
     all_songs_aesthetic_header.place(y=80)
+   
+    # Adds scrollbar
     all_songs_canvas = tk.Canvas(all_songs_frame,width=900, height=800)
     all_songs_canvas.place(x=0,y=160)
-    # Adds scrollbar
     all_songs_scroll_bar = tk.Scrollbar(all_songs_frame, orient=VERTICAL, command=all_songs_canvas.yview) 
     all_songs_scroll_bar.pack(side=RIGHT, fill=Y) 
     all_songs_canvas.configure(yscrollcommand=all_songs_scroll_bar.set)
@@ -83,7 +84,7 @@ def create_left_area(root, current_user, update_song_info_callback):
 
     all_songs_scroll_frame = tk.Frame(all_songs_canvas)
     all_songs_canvas.create_window((0, 0), window=all_songs_scroll_frame, anchor="nw")
-    current_y_axis = 50
+
 
     # Get and display all songs from the database
     songs = Database.get_all_songs()
@@ -153,8 +154,9 @@ def create_left_area(root, current_user, update_song_info_callback):
     search_var.trace_add("write", lambda *args: update_song_list())
 
     # Add content to the "Playlist" tab
-    playlist_label = tk.Label(playlist_frame, text="Your Playlists", font=("Arial", 20))
-    playlist_label.pack(pady=20)
+    
+   
+
 
     # Fetch and display the user's playlists
     def show_playlist_songs(playlist_name):
@@ -189,9 +191,14 @@ def create_left_area(root, current_user, update_song_info_callback):
         for widget in playlist_frame.winfo_children():
             widget.destroy()
 
-        playlist_label = tk.Label(playlist_frame, text="Your Playlists", font=("Arial", 20))
-        playlist_label.pack(pady=20)
+        playlist_aesthetic_header = tk.Frame(playlist_frame,width=900, height=90, highlightbackground="black", highlightthickness=10)
+        playlist_label = tk.Label(playlist_frame, text=" Your Playlists", font=("Arial", 25))
+        playlist_aesthetic_header.place(y=0)
+        playlist_label.place(x=320, y=20)
+        #adds scrollbar
 
+        
+        
         def new_playlist_ui():
             for widget in playlist_frame.winfo_children():
                 widget.destroy()
@@ -275,16 +282,28 @@ def create_left_area(root, current_user, update_song_info_callback):
 
         # Now use the above in the button
         new_playlist_button = tk.Button(playlist_frame, text="New Playlist", font=("Arial", 14), command=new_playlist_ui)
-        new_playlist_button.place(x=10, y=10)
+        new_playlist_button.place(x=20, y=20)
 
         playlists, error = Database.get_all_playlists_for_user(current_user)
         if error:
             playlist_error_label = tk.Label(playlist_frame, text=f"Error: {error}", font=("Arial", 16))
             playlist_error_label.pack(pady=20)
         else:
+            playlists_canvas = tk.Canvas(playlist_frame,width=900, height=800)
+            playlists_canvas.place(x=0,y=90)
+            playlists_scroll_bar = tk.Scrollbar(playlist_frame, orient=VERTICAL, command=playlists_canvas.yview) 
+            playlists_scroll_bar.pack(side=RIGHT, fill=Y) 
+            playlists_canvas.configure(yscrollcommand=playlists_scroll_bar.set)
+            playlists_canvas.bind('<Configure>', lambda e: playlists_canvas.configure(scrollregion=playlists_canvas.bbox("all")))
+
+            playlist_canvas_scroll_frame = tk.Frame(playlists_canvas)
+            playlists_canvas.create_window((0, 0), window=playlist_canvas_scroll_frame, anchor="nw")
+            
             if playlists:
                 for playlist in playlists:
-                    playlist_row = tk.Frame(playlist_frame)
+
+                    playlist_row = tk.Frame(playlist_canvas_scroll_frame)
+            
                     playlist_row.pack(pady=5, fill="x")
 
                     playlist_button = tk.Button(playlist_row, text=playlist, font=("Arial", 14),
@@ -299,9 +318,7 @@ def create_left_area(root, current_user, update_song_info_callback):
                 no_playlist_label.pack(pady=20)
 
     show_playlists()
-    #scroll bar for playlists
-    playlist_scroll_bar = tk.Scrollbar(playlist_frame) 
-    playlist_scroll_bar.pack(side=RIGHT, fill=Y) 
+
 
     # Add content to the "Account" tab
     account_label = tk.Label(account_frame, text=f"Account", font=("Arial", 20))
