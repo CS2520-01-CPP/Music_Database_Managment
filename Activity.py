@@ -165,6 +165,7 @@ def create_left_area(root, current_user, update_song_info_callback):
         # Add the back button to go back to the list of playlists
         back_button = tk.Button(playlist_frame, text="Back to Playlists", font=("Arial", 14),command=lambda: show_playlists())
         back_button.pack(pady=10)
+        tk.Button(playlist_frame, text="Edit Playlist", font=("Arial", 14)).pack(pady=10)
 
         playlist_name_label = tk.Label(playlist_frame, text=f"Songs in {playlist_name}", font=("Arial", 20))
         playlist_name_label.pack(pady=10)
@@ -215,6 +216,7 @@ def create_left_area(root, current_user, update_song_info_callback):
 
 
             # Frame + canvas for checkbox song list
+            #scrollbar
             canvas = tk.Canvas(playlist_frame, width=500, height=400)
             scroll_frame = tk.Frame(canvas)
             scrollbar = tk.Scrollbar(playlist_frame, orient="vertical", command=canvas.yview)
@@ -378,25 +380,40 @@ def create_right_area(root):
         
         # Update the UI labels with song information
         song_title_label.config(text=f"Song Title: {title}")
+        song_title_label.place(x=30,y=350)
         artist_label.config(text=f"Author: {author}")
+        artist_label.place(x=30,y=400)
         
         # If duration is a string (e.g., "3 minutes 45 seconds"), just display it as is
         if isinstance(duration, str):
             duration_label.config(text=f"Duration: {duration}")
+            duration_label.place(x=30,y=450)
         else:
             # Otherwise, it's a float (duration in seconds), format it to minutes and seconds
             minutes = int(duration // 60)
             seconds = int(duration % 60)
             duration_label.config(text=f"Duration: {minutes} minutes {seconds} seconds")
+            duration_label.place(x=30,y=450)
+        #image to display when playing song
+        absolute_path = os.path.dirname(os.path.abspath(__file__))
+        filename = os.path.join(absolute_path, "pauseplay.png")
+        og_image = PhotoImage(file = filename)
+        image = og_image.subsample(6,6)
+        play_image_label = tk.Label(right_frame, image = image)
+        play_image_label.photo = image
+        play_image_label.place(x=50,y=75)
         
         # Update the current song name
         current_song_name = song_name
         current_song_dir = os.path.join(os.getcwd(), 'Songs', current_song_name)
         print(f"Song directory: {current_song_dir}")
+        
+        
+ 
 
     # Add the Play/Stop button
     play_button = tk.Button(right_frame, text="Play", font=("Arial", 14), bg="lightgreen", command=toggle_play_stop)
-    play_button.pack(pady=10)
+    play_button.place(x=125,y=300)
 
     # Return the update function so it can be used elsewhere
     return update_song_info
