@@ -3,10 +3,6 @@ Module: Main.py
 Author: Jacob       : Backend
         Marlenne    : Frontend
 
-Date Created: 2025-04-02
-Last Modified: 2025-04-26
-Version: 1.0
-
 Description:
 This module creates a graphical user interface (GUI) for user sign-in and registration. It allows users to sign up for a new account or log into an existing one. 
 The module interacts with a database to handle user authentication, ensuring that only registered users can access the system. 
@@ -33,7 +29,7 @@ import os
 root = tk.Tk()
 root.title("Python Final Sign-In Page")
 root.geometry("400x400")
-#root.configure(background='beige')
+
 # Basic UI for now
 tk.Label(root, text="Username:").pack()
 entry_username = tk.Entry(root)
@@ -46,12 +42,12 @@ entry_password.pack()
 # Functions to sign in with database
 tk.Button(root, text="Signup", command=lambda: Database.do_signup(entry_username, entry_password)).pack(pady=5)
 tk.Button(root, text="Login", command=lambda: Database.do_login(entry_username, entry_password, root)).pack(pady=5)
-
 absolute_path = os.path.dirname(os.path.abspath(__file__))
 filename = os.path.join(absolute_path, "logo.png")
 og_image = PhotoImage(file = filename)
 image = og_image.subsample(6,6)
 image_label = tk.Label(root, image = image)
 image_label.pack()
+
 # Runs the sign in page
 root.mainloop()
